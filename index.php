@@ -2,8 +2,8 @@
 
 namespace {
     $GLOBALS['date'] = $GLOBALS['time'] = new \Time($_SERVER['REQUEST_TIME'] ?? \time());
+    // Alias for `Time`
     \class_alias('Time', 'Date');
-    \Time::_('en', '%A, %B %d, %Y');
     // Alias for `State`
     \class_alias('State', 'Site');
     // Alias for `$state`
@@ -43,11 +43,6 @@ namespace x\layout {
         return $content;
     }
     function get() {
-        $key = \strtr(\State::get('language') ?? "", '-', '_');
-        // Fix for missing language key → default to `en`
-        if (!\Time::_($key)) {
-            \Time::_($key, \Time::_('en'));
-        }
         foreach (\g(\LOT . \D . 'y', 0) as $k => $v) {
             // Load user function(s) from the `.\lot\y\*` folder if any
             if (\is_file($index = ($folder = $k) . \D . 'index.php')) {
