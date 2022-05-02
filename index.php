@@ -91,7 +91,12 @@ namespace x\layout {
         \ob_start("\\ob_gzhandler");
         // `$content = ['page', [], 200];`
         if (\is_array($content) && isset($content[0]) && \is_string($content[0])) {
-            $content = \Layout::get(...$content);
+            if ($r = \Layout::get(...$content)) {
+                $content = $r;
+            } else if (\defined("\\TEST") && \TEST) {
+                \status(403);
+                $content = \abort(\i('Current route response is %s, but no layout file can be loaded because it does not meet the criteria or does not contain any %s file.', ['<code>' . \json_encode($content) . '</code>', '<code>index.php</code>']));
+            }
         }
         echo \Hook::fire('content', [$content]);
         \ob_end_flush();
