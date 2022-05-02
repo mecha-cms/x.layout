@@ -80,9 +80,9 @@ namespace x\layout {
                 }
             }
         } catch (\Throwable $e) {
-            // Catch error that occurs in the loaded layout, and then disable the layout immediately!
+            // Catch error that occurs in the loaded layout then immediately disable the layout!
             $y = \explode(\D, \substr($e->getFile(), \strlen($folder = \LOT . \D . 'y' . \D)), 2)[0] ?? \P;
-            \file_put_contents($folder . $y . \D . 'error', ((string) $e) . \PHP_EOL . \PHP_EOL, \FILE_APPEND);
+            \file_put_contents(\ENGINE . \D . 'log' . \D . 'error-y', ((string) $e) . \PHP_EOL, \FILE_APPEND);
             \rename($folder . $y . \D . 'index.php', $folder . $y . \D . 'index.x');
         }
     }
