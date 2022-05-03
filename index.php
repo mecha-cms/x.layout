@@ -110,37 +110,15 @@ namespace x\layout {
 }
 
 namespace x\layout\state {
-    function are() {
-        foreach ((array) \State::get('are', true) as $k => $v) {
-            \State::set('[y].are:' . $k, $v);
-        }
-    }
-    function can() {
-        foreach ((array) \State::get('can', true) as $k => $v) {
-            \State::set('[y].can:' . $k, $v);
-        }
-    }
-    function has() {
-        foreach ((array) \State::get('has', true) as $k => $v) {
-            \State::set('[y].has:' . $k, $v);
-        }
-    }
-    function is() {
-        foreach ((array) \State::get('is', true) as $k => $v) {
-            \State::set('[y].is:' . $k, $v);
+    function y() {
+        foreach (['are', 'as', 'can', 'has', 'is', 'not', 'of', 'with'] as $v) {
+            foreach ((array) \State::get($v, true) as $kk => $vv) {
+                \State::set('[y].' . $v . ':' . $kk, $vv);
+            }
         }
         if ($x = \State::get('is.error')) {
             \State::set('[y].error:' . $x, true);
         }
     }
-    function not() {
-        foreach ((array) \State::get('not', true) as $k => $v) {
-            \State::set('[y].not:' . $k, $v);
-        }
-    }
-    \Hook::set('content', __NAMESPACE__ . "\\are", 0);
-    \Hook::set('content', __NAMESPACE__ . "\\can", 0);
-    \Hook::set('content', __NAMESPACE__ . "\\has", 0);
-    \Hook::set('content', __NAMESPACE__ . "\\is", 0);
-    \Hook::set('content', __NAMESPACE__ . "\\not", 0);
+    \Hook::set('content', __NAMESPACE__ . "\\y", 0);
 }
