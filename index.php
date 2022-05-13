@@ -44,11 +44,14 @@ namespace x\layout {
     }
     function get() {
         try {
+            $uses = [];
             foreach (\g(\LOT . \D . 'y', 0) as $k => $v) {
                 // Load user function(s) from the `.\lot\y\*` folder if any
-                if (\is_file($index = ($folder = $k) . \D . 'index.php')) {
+                if (\is_file($v = $k . \D . 'index.php') && empty($GLOBALS['Y'][0][$v])) {
+                    $n = \basename($k);
+                    $uses[$v] = \content($k . \D . $n) ?? $n;
                     // Run layout task if any
-                    if (\is_file($task = $folder . \D . 'task.php')) {
+                    if (\is_file($task = $k . \D . 'task.php')) {
                         (static function($f) {
                             \extract($GLOBALS, \EXTR_SKIP);
                             require $f;
@@ -57,33 +60,35 @@ namespace x\layout {
                     (static function($f) {
                         \extract($GLOBALS, \EXTR_SKIP);
                         require $f;
-                    })($index);
-                }
-                // Detect relative asset path to the `.\lot\y\*` folder
-                if (null !== \State::get('x.asset') && $assets = \Asset::get()) {
-                    foreach ($assets as $k => $v) {
-                        foreach ($v as $kk => $vv) {
-                            // Full path, no change!
-                            if (
-                                0 === \strpos($kk, \PATH) ||
-                                0 === \strpos($kk, '//') ||
-                                false !== \strpos($kk, '://')
-                            ) {
-                                continue;
-                            }
-                            if ($path = \Asset::path($folder . \D . $kk)) {
-                                \Asset::let($kk);
-                                \Asset::set($path, $vv['stack'], $vv[2]);
+                    })($v);
+                    // Detect relative asset path to the `.\lot\y\*` folder
+                    if (\class_exists("\\Asset") && $assets = \Asset::get()) {
+                        foreach ($assets as $kk => $vv) {
+                            foreach ($vv as $kkk => $vvv) {
+                                // Full path, no change!
+                                if (
+                                    0 === \strpos($kkk, \PATH) ||
+                                    0 === \strpos($kkk, '//') ||
+                                    false !== \strpos($kkk, '://')
+                                ) {
+                                    continue;
+                                }
+                                if ($path = \Asset::path($k . \D . $kkk)) {
+                                    \Asset::let($kkk);
+                                    \Asset::set($path, $vvv['stack'], $vvv[2]);
+                                }
                             }
                         }
                     }
                 }
             }
+            \natsort($uses);
+            $GLOBALS['Y'][1] = \array_keys($uses);
         } catch (\Throwable $e) {
             // Catch error that occurs in the loaded layout then immediately disable the layout!
             $y = \explode(\D, \substr($e->getFile(), \strlen($folder = \LOT . \D . 'y' . \D)), 2)[0] ?? \P;
             \file_put_contents(\ENGINE . \D . 'log' . \D . 'error-y', ((string) $e) . \PHP_EOL, \FILE_APPEND);
-            \rename($folder . $y . \D . 'index.php', $folder . $y . \D . 'index.x');
+            \rename($folder . $y . \D . 'index.php', $folder . $y . \D . '.index.php');
         }
     }
     function route($content, $path) {
