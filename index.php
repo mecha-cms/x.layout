@@ -24,7 +24,7 @@ namespace x\layout {
                     $r = new \HTML($m[0]);
                     $c = true === $r['class'] ? [] : \preg_split('/\s+/', $r['class'] ?? "");
                     $c = \array_unique(\array_merge($c, \array_keys(\array_filter((array) \State::get('[y]', true)))));
-                    \sort($c);
+                    \sort($c); // Sort class name(s)
                     $r['class'] = \trim(\implode(' ', $c));
                     return $r;
                 }
@@ -34,9 +34,12 @@ namespace x\layout {
         return $content;
     }
     function get() {
+        if (!\class_exists("\\Asset")) {
+            return;
+        }
         foreach ($GLOBALS['Y'][1] ?? [] as $use) {
             // Detect relative asset path to the `.\lot\y\*` folder
-            if (\class_exists("\\Asset") && $assets = \Asset::get()) {
+            if ($assets = \Asset::get()) {
                 foreach ($assets as $k => $v) {
                     foreach ($v as $kk => $vv) {
                         // Full path, no change!
@@ -59,6 +62,17 @@ namespace x\layout {
     function route($content, $path) {
         \ob_start();
         \ob_start("\\ob_gzhandler");
+        if (\is_array($content) && \class_exists("\\Page")) {
+            $page = $GLOBALS['page'] ?? new \Page;
+            if ($page && $page instanceof \Page && ($layout = $page->layout)) {
+                // `$content = ['.\lot\y\log\page\gallery.php', [], 200];`
+                if (0 === \strpos($layout, ".\\")) {
+                    $layout = \stream_resolve_include_path(\PATH . \D . \strtr(\substr($layout, 2), ["\\" => \D]));
+                }
+                // `$content = ['page/gallery', [], 200];`
+                $content[0] = $layout;
+            }
+        }
         // `$content = ['page', [], 200];`
         if (\is_array($content) && isset($content[0]) && \is_string($content[0])) {
             if ($r = \Layout::get(...$content)) {
