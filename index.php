@@ -59,12 +59,10 @@ namespace x\layout {
             }
         }
     }
-    function route($content, $path) {
-        \ob_start();
-        \ob_start("\\ob_gzhandler");
+    function page($content) {
         if (\is_array($content) && \class_exists("\\Page")) {
             $page = $GLOBALS['page'] ?? new \Page;
-            if ($page && $page instanceof \Page && ($layout = $page->layout)) {
+            if ($page && $page instanceof \Page && $page->exist() && ($layout = $page->layout)) {
                 // `$content = ['.\lot\y\log\page\gallery.php', [], 200];`
                 if (0 === \strpos($layout, ".\\")) {
                     $layout = \stream_resolve_include_path(\PATH . \D . \strtr(\substr($layout, 2), ["\\" => \D]));
@@ -73,6 +71,11 @@ namespace x\layout {
                 $content[0] = $layout;
             }
         }
+        return $content;
+    }
+    function route($content, $path) {
+        \ob_start();
+        \ob_start("\\ob_gzhandler");
         // `$content = ['page', [], 200];`
         if (\is_array($content) && isset($content[0]) && \is_string($content[0])) {
             if ($r = \Layout::get(...$content)) {
@@ -90,6 +93,7 @@ namespace x\layout {
     }
     \Hook::set('content', __NAMESPACE__ . "\\content", 20);
     \Hook::set('get', __NAMESPACE__ . "\\get", 0);
+    \Hook::set('route', __NAMESPACE__ . "\\page", 900);
     \Hook::set('route', __NAMESPACE__ . "\\route", 1000);
 }
 
