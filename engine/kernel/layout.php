@@ -38,6 +38,12 @@ class Layout extends Genome {
             if (isset($lot['data'])) {
                 $data = $lot['data'];
             }
+            $layout = (object) [
+                'id' => $id,
+                'lot' => $lot,
+                'name' => strtok(substr($f, strlen(LOT . D . 'y' . D)), D),
+                'path' => $f
+            ];
             require $f;
             return ob_get_clean();
         }
