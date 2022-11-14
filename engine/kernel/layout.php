@@ -38,12 +38,12 @@ class Layout extends Genome {
             if (isset($lot['data'])) {
                 $data = $lot['data'];
             }
-            $layout = (object) [
+            $layout = (object) array_replace_recursive([
                 'id' => $id,
                 'lot' => $lot,
                 'name' => strtok(substr($f, strlen(LOT . D . 'y' . D)), D),
                 'path' => $f
-            ];
+            ], (array) ($lot['layout'] ?? []));
             require $f;
             return ob_get_clean();
         }
