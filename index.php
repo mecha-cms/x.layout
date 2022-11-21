@@ -9,7 +9,7 @@ namespace {
     // Alias for `$state`
     $GLOBALS['site'] = $site = $state;
     // Base title for the layout
-    $GLOBALS['t'] = $t = new \Anemone([$state->title], ' &#x00B7; ');
+    $GLOBALS['t'] = $t = new \Anemone([$state->title], ' &#x00b7; ');
 }
 
 namespace x\layout {
