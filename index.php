@@ -13,27 +13,7 @@ namespace {
 }
 
 namespace x\layout {
-    function content($content) {
-        if (false !== \strpos($content, '</html>')) {
-            return \preg_replace_callback('/<html(?:\s[^>]*)?>/', static function ($m) {
-                if (
-                    false !== \strpos($m[0], ' class="') ||
-                    false !== \strpos($m[0], ' class ') ||
-                    ' class>' === \substr($m[0], -7)
-                ) {
-                    $r = new \HTML($m[0]);
-                    $c = true === $r['class'] ? [] : \preg_split('/\s+/', $r['class'] ?? "");
-                    $c = \array_unique(\array_merge($c, \array_keys(\array_filter((array) \State::get('[y]', true)))));
-                    \sort($c); // Sort class name(s)
-                    $r['class'] = \trim(\implode(' ', $c));
-                    return $r;
-                }
-                return $m[0];
-            }, $content);
-        }
-        return $content;
-    }
-    function get() {
+    function asset() {
         if (!\class_exists("\\Asset")) {
             return;
         }
@@ -57,6 +37,38 @@ namespace x\layout {
                     }
                 }
             }
+        }
+    }
+    function content($content) {
+        if (false !== \strpos($content, '</html>')) {
+            return \preg_replace_callback('/<html(?:\s[^>]*)?>/', static function ($m) {
+                if (
+                    false !== \strpos($m[0], ' class="') ||
+                    false !== \strpos($m[0], ' class ') ||
+                    ' class>' === \substr($m[0], -7)
+                ) {
+                    $r = new \HTML($m[0]);
+                    $c = true === $r['class'] ? [] : \preg_split('/\s+/', $r['class'] ?? "");
+                    $c = \array_unique(\array_merge($c, \array_keys(\array_filter((array) \State::get('[y]', true)))));
+                    \sort($c); // Sort class name(s)
+                    $r['class'] = \trim(\implode(' ', $c));
+                    return $r;
+                }
+                return $m[0];
+            }, $content);
+        }
+        return $content;
+    }
+    function get() {
+        \extract($GLOBALS);
+        $content = \Hook::fire('route', [null, $url->path, $url->query, $url->hash]);
+        if (\is_array($content) || \is_object($content)) {
+            if (!\error_get_last()) {
+                \type('application/json');
+            }
+            echo \To::JSON($content, true);
+        } else {
+            echo $content;
         }
     }
     function page($content) {
@@ -92,7 +104,8 @@ namespace x\layout {
         return \ob_get_clean();
     }
     \Hook::set('content', __NAMESPACE__ . "\\content", 20);
-    \Hook::set('get', __NAMESPACE__ . "\\get", 0);
+    \Hook::set('get', __NAMESPACE__ . "\\asset", 0);
+    \Hook::set('get', __NAMESPACE__ . "\\get", 1000);
     \Hook::set('route', __NAMESPACE__ . "\\page", 900);
     \Hook::set('route', __NAMESPACE__ . "\\route", 1000);
 }
