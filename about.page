@@ -2,6 +2,7 @@
 title: Layout
 description: Common automation features to speed up the site creation process.
 icon: 'M13,3V9H21V3M13,21H21V11H13M3,21H11V15H3M3,13H11V3H3V13Z'
+color: '#550bdf'
 author: Taufik Nurrohman
 type: Markdown
 version: 2.0.2
