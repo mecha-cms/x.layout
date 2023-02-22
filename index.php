@@ -10,6 +10,10 @@ namespace {
     $GLOBALS['site'] = $site = $state;
     // Base title for the layout
     $GLOBALS['t'] = $t = new \Anemone([$state->title], ' &#x00b7; ');
+    // [E]scape HTML [at]tribute’s value
+    function eat(?string $value): ?string {
+        return "" !== ($value = \htmlspecialchars($value ?? "", \ENT_HTML5 | \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8', false)) ? $value : null;
+    }
 }
 
 namespace x\layout {
@@ -121,5 +125,5 @@ namespace x\layout\state {
             \State::set('[y].error:' . $x, true);
         }
     }
-    \Hook::set('content', __NAMESPACE__ . "\\y", 0);
+    \Hook::set('enter', __NAMESPACE__ . "\\y", 0);
 }
