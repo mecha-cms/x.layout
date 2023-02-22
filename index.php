@@ -125,5 +125,5 @@ namespace x\layout\state {
             \State::set('[y].error:' . $x, true);
         }
     }
-    \Hook::set('enter', __NAMESPACE__ . "\\y", 0);
+    \Hook::set('content', __NAMESPACE__ . "\\y", 0);
 }
