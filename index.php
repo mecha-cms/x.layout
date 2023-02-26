@@ -94,7 +94,7 @@ namespace x\layout {
                 $content = $r;
             } else if (\defined("\\TEST") && \TEST) {
                 \status(403);
-                $content = \abort(\i('Current route response is %s, but no layout file can be loaded because it does not meet the criteria or does not contain any %s file.', ['<code>' . \json_encode($content) . '</code>', '<code>index.php</code>']));
+                $content = \abort(\i('Requires at least one %s file.', ['<code>' . \strtr(\LOT, [\PATH . \D => '.' . \D]) . \D . 'y' . \D . '*' . \D . 'index.php</code>']));
             }
         }
         echo \Hook::fire('content', [$content]);
