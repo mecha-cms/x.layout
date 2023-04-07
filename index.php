@@ -75,12 +75,9 @@ namespace x\layout {
         if (\is_array($content) && \class_exists("\\Page")) {
             $page = $GLOBALS['page'] ?? new \Page;
             if ($page && $page instanceof \Page && $page->exist() && ($layout = $page->layout)) {
-                // `$content = ['.\lot\y\log\page\video.php', [], 200];`
-                if (0 === \strpos($layout, ".\\")) {
-                    $layout = \stream_resolve_include_path(\PATH . \D . \strtr(\substr($layout, 2), ["\\" => \D]));
-                // `$content = ['file:///lot/y/log/page/video.php', [], 200];`
-                } else if (0 === \strpos($layout, 'file:///')) {
-                    $layout = \stream_resolve_include_path(\PATH . \D . \strtr(\substr($layout, 8), ["\\" => \D]));
+                // `$content = ['/lot/y/log/page/video.php', [], 200];`
+                if (0 === \strpos($layout, '/')) {
+                    $layout = \stream_resolve_include_path(\PATH . \strtr($layout, ['/' => \D]));
                 }
                 // `$content = ['page/video', [], 200];`
                 $content[0] = $layout;
