@@ -1,32 +1,18 @@
 <?php
 
+namespace {
+    $GLOBALS['date'] = $GLOBALS['time'] = new \Time($_SERVER['REQUEST_TIME'] ?? \time());
+    // Alias for `State`
+    \class_alias("\\State", "\\Site");
+    // Alias for `Time`
+    \class_alias("\\Time", "\\Date");
+    // Alias for `$state`
+    $GLOBALS['site'] = $site = $state;
+    // Base title for the layout
+    $GLOBALS['t'] = $t = new \Anemone([$state->title], ' &#x00b7; ');
+}
+
 namespace x\layout {
-    function asset() {
-        if (!\class_exists("\\Asset")) {
-            return;
-        }
-        foreach ($GLOBALS['Y'][1] ?? [] as $use) {
-            // Detect relative asset path to the `.\lot\y\*` folder
-            if ($assets = \Asset::get()) {
-                foreach ($assets as $k => $v) {
-                    foreach ($v as $kk => $vv) {
-                        // Full path, no change!
-                        if (
-                            0 === \strpos($kk, \PATH) ||
-                            0 === \strpos($kk, '//') ||
-                            false !== \strpos($kk, '://')
-                        ) {
-                            continue;
-                        }
-                        if ($path = \Asset::path(\dirname($use) . \D . $kk)) {
-                            \Asset::let($kk);
-                            \Asset::set($path, $vv['stack'], $vv[2]);
-                        }
-                    }
-                }
-            }
-        }
-    }
     function content($content) {
         if (false !== \strpos($content, '</html>')) {
             return \preg_replace_callback('/<html(?:\s[^>]*)?>/', static function ($m) {
@@ -59,20 +45,6 @@ namespace x\layout {
             echo $content;
         }
     }
-    function page($content) {
-        if (\is_array($content) && \class_exists("\\Page")) {
-            $page = $GLOBALS['page'] ?? new \Page;
-            if ($page && $page instanceof \Page && $page->exist() && ($layout = $page->layout)) {
-                // `$content = ['/lot/y/log/page/video.php', [], 200];`
-                if (0 === \strpos($layout, '/')) {
-                    $layout = \stream_resolve_include_path(\PATH . \strtr($layout, ['/' => \D]));
-                }
-                // `$content = ['page/video', [], 200];`
-                $content[0] = $layout;
-            }
-        }
-        return $content;
-    }
     function route($content, $path) {
         \ob_start();
         \ob_start("\\ob_gzhandler");
@@ -91,6 +63,12 @@ namespace x\layout {
         \header('content-length: ' . \ob_get_length());
         return \ob_get_clean();
     }
+    \Hook::set('content', __NAMESPACE__ . "\\content", 20);
+    \Hook::set('get', __NAMESPACE__ . "\\get", 1000);
+    \Hook::set('route', __NAMESPACE__ . "\\route", 1000);
+}
+
+namespace x\layout\content {
     function state() {
         foreach (['are', 'as', 'can', 'has', 'is', 'not', 'of', 'with'] as $v) {
             foreach ((array) \State::get($v, true) as $kk => $vv) {
@@ -101,22 +79,53 @@ namespace x\layout {
             \State::set('[y].error:' . $x, true);
         }
     }
-    \Hook::set('content', __NAMESPACE__ . "\\content", 20);
     \Hook::set('content', __NAMESPACE__ . "\\state", 0);
-    \Hook::set('get', __NAMESPACE__ . "\\asset", 0);
-    \Hook::set('get', __NAMESPACE__ . "\\get", 1000);
-    \Hook::set('route', __NAMESPACE__ . "\\page", 900);
-    \Hook::set('route', __NAMESPACE__ . "\\route", 1000);
 }
 
-namespace {
-    $GLOBALS['date'] = $GLOBALS['time'] = new \Time($_SERVER['REQUEST_TIME'] ?? \time());
-    // Alias for `State`
-    \class_alias("\\State", "\\Site");
-    // Alias for `Time`
-    \class_alias("\\Time", "\\Date");
-    // Alias for `$state`
-    $GLOBALS['site'] = $site = $state;
-    // Base title for the layout
-    $GLOBALS['t'] = $t = new \Anemone([$state->title], ' &#x00b7; ');
+namespace x\layout\get {
+    function asset() {
+        if (!\class_exists("\\Asset")) {
+            return;
+        }
+        foreach ($GLOBALS['Y'][1] ?? [] as $use) {
+            // Detect relative asset path to the `.\lot\y\*` folder
+            if ($assets = \Asset::get()) {
+                foreach ($assets as $k => $v) {
+                    foreach ($v as $kk => $vv) {
+                        // Full path, no change!
+                        if (
+                            0 === \strpos($kk, \PATH) ||
+                            0 === \strpos($kk, '//') ||
+                            false !== \strpos($kk, '://')
+                        ) {
+                            continue;
+                        }
+                        if ($path = \Asset::path(\dirname($use) . \D . $kk)) {
+                            \Asset::let($kk);
+                            \Asset::set($path, $vv['stack'], $vv[2]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    \Hook::set('get', __NAMESPACE__ . "\\asset", 0);
+}
+
+namespace x\layout\route {
+    function page($content) {
+        if (\is_array($content) && \class_exists("\\Page")) {
+            $page = $GLOBALS['page'] ?? new \Page;
+            if ($page && $page instanceof \Page && $page->exist() && ($layout = $page->layout)) {
+                // `$content = ['/lot/y/log/page/video.php', [], 200];`
+                if (0 === \strpos($layout, '/')) {
+                    $layout = \stream_resolve_include_path(\PATH . \strtr($layout, ['/' => \D]));
+                }
+                // `$content = ['page/video', [], 200];`
+                $content[0] = $layout;
+            }
+        }
+        return $content;
+    }
+    \Hook::set('route', __NAMESPACE__ . "\\page", 900);
 }
