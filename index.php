@@ -1,17 +1,5 @@
 <?php
 
-namespace {
-    $GLOBALS['date'] = $GLOBALS['time'] = new \Time($_SERVER['REQUEST_TIME'] ?? \time());
-    // Alias for `State`
-    \class_alias("\\State", "\\Site");
-    // Alias for `Time`
-    \class_alias("\\Time", "\\Date");
-    // Alias for `$state`
-    $GLOBALS['site'] = $site = $state;
-    // Base title for the layout
-    $GLOBALS['t'] = $t = new \Anemone([$state->title], ' &#x00b7; ');
-}
-
 namespace x\layout {
     function asset() {
         if (!\class_exists("\\Asset")) {
@@ -103,15 +91,7 @@ namespace x\layout {
         \header('content-length: ' . \ob_get_length());
         return \ob_get_clean();
     }
-    \Hook::set('content', __NAMESPACE__ . "\\content", 20);
-    \Hook::set('get', __NAMESPACE__ . "\\asset", 0);
-    \Hook::set('get', __NAMESPACE__ . "\\get", 1000);
-    \Hook::set('route', __NAMESPACE__ . "\\page", 900);
-    \Hook::set('route', __NAMESPACE__ . "\\route", 1000);
-}
-
-namespace x\layout\state {
-    function y() {
+    function state() {
         foreach (['are', 'as', 'can', 'has', 'is', 'not', 'of', 'with'] as $v) {
             foreach ((array) \State::get($v, true) as $kk => $vv) {
                 \State::set('[y].' . $v . ':' . $kk, $vv);
@@ -121,5 +101,22 @@ namespace x\layout\state {
             \State::set('[y].error:' . $x, true);
         }
     }
-    \Hook::set('content', __NAMESPACE__ . "\\y", 0);
+    \Hook::set('content', __NAMESPACE__ . "\\content", 20);
+    \Hook::set('content', __NAMESPACE__ . "\\state", 0);
+    \Hook::set('get', __NAMESPACE__ . "\\asset", 0);
+    \Hook::set('get', __NAMESPACE__ . "\\get", 1000);
+    \Hook::set('route', __NAMESPACE__ . "\\page", 900);
+    \Hook::set('route', __NAMESPACE__ . "\\route", 1000);
+}
+
+namespace {
+    $GLOBALS['date'] = $GLOBALS['time'] = new \Time($_SERVER['REQUEST_TIME'] ?? \time());
+    // Alias for `State`
+    \class_alias("\\State", "\\Site");
+    // Alias for `Time`
+    \class_alias("\\Time", "\\Date");
+    // Alias for `$state`
+    $GLOBALS['site'] = $site = $state;
+    // Base title for the layout
+    $GLOBALS['t'] = $t = new \Anemone([$state->title], ' &#x00b7; ');
 }
