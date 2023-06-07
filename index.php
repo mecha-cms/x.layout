@@ -87,7 +87,7 @@ namespace x\layout\get {
         if (!\class_exists("\\Asset")) {
             return;
         }
-        foreach ($GLOBALS['Y'][1] ?? [] as $use) {
+        foreach ($GLOBALS['Y'][1] ?? [] as $index) {
             // Detect relative asset path to the `.\lot\y\*` folder
             if ($assets = \Asset::get()) {
                 foreach ($assets as $k => $v) {
@@ -100,7 +100,7 @@ namespace x\layout\get {
                         ) {
                             continue;
                         }
-                        if ($path = \Asset::path(\dirname($use) . \D . $kk)) {
+                        if ($path = \Asset::path(\dirname($index) . \D . $kk)) {
                             \Asset::let($kk);
                             \Asset::set($path, $vv['stack'], $vv[2]);
                         }

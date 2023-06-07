@@ -1,5 +1,5 @@
 {
-  "description": "Common automation features to speed up the site creation process.",
+  "description": "Common automation features to speed up the site creation.",
   "license": "GPL-3.0-or-later",
   "name": "mecha-cms/x.layout"
 }
