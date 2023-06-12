@@ -47,7 +47,7 @@ namespace x\layout {
     }
     function route($content, $path) {
         \ob_start();
-        \ob_start("\\ob_gzhandler");
+        \ob_start(!\error_get_last() ? "\\ob_gzhandler" : null);
         // `$content = ['page', [], 200];`
         if (\is_array($content) && isset($content[0]) && \is_string($content[0])) {
             if ($r = \Layout::get(...$content)) {
