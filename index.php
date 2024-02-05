@@ -70,6 +70,7 @@ namespace x\layout {
 
 namespace x\layout\content {
     function state() {
+        \State::set('[x]', []);
         foreach (['are', 'as', 'can', 'has', 'is', 'not', 'of', 'with'] as $v) {
             foreach ((array) \State::get($v, true) as $kk => $vv) {
                 \State::set('[y].' . $v . ':' . $kk, $vv);
