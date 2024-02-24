@@ -39,7 +39,7 @@ class Layout extends Genome {
                 $data = $lot['data'];
             }
             $layout = (object) array_replace_recursive([
-                'id' => $id,
+                'key' => $id,
                 'lot' => $lot,
                 'name' => strtok(substr($f, strlen(LOT . D . 'y' . D)), D),
                 'path' => $f
