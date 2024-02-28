@@ -80,26 +80,26 @@ class Layout extends Genome {
         return null;
     }
 
-    public static function path($value) {
+    public static function path($key) {
         $c = static::class;
         $path = LOT . D . 'y';
-        if (is_string($value)) {
+        if (is_string($key)) {
             // Full path, be quick!
-            if (0 === strpos($value, PATH) && is_file($value)) {
-                return $value;
+            if (0 === strpos($key, PATH) && is_file($key)) {
+                return $key;
             }
-            $key = strtr($value, D, '/');
+            $key = strtr($key, D, '/');
             // Added by the `Layout::set()`
             if (isset(self::$lot[$c][1][$key]) && is_string(self::$lot[$c][1][$key]) && !isset(self::$lot[$c][0][$key])) {
                 return exist(self::$lot[$c][1][$key], 1) ?: null;
             }
             // Guessing…
-            $any = array_unique(array_values(step($key, '/')));
+            $keys = array_unique(array_values(step($key, '/')));
         } else {
-            $any = (array) $value;
+            $keys = (array) $key;
         }
         $files = [];
-        foreach ($any as $v) {
+        foreach ($keys as $v) {
             if (!is_string($v)) {
                 continue;
             }
