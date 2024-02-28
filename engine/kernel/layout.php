@@ -22,7 +22,7 @@ class Layout extends Genome {
     }
 
     public static function get($key, array $lot = [], int $status = null) {
-        if (!$f = self::of($key)) {
+        if (!$value = self::of($key)) {
             return null;
         }
         $data = [];
@@ -34,51 +34,53 @@ class Layout extends Genome {
         if (isset($status) && !headers_sent()) {
             status($status);
         }
-        if (is_callable($f)) {
-            return call_user_func($f, $key, $lot, $status);
+        if (is_callable($value)) {
+            return call_user_func($value, $key, $lot, $status);
         }
-        if (is_file($f)) {
+        if (is_file($value)) {
             $data['layout'] = (object) array_replace_recursive([
                 'key' => $key,
                 'lot' => $lot,
-                'name' => strtok(substr($f, strlen(LOT . D . 'y' . D)), D),
-                'path' => $f
+                'name' => strtok(substr($value, strlen(LOT . D . 'y' . D)), D),
+                'path' => $value
             ], (array) ($lot['layout'] ?? []));
             $data['lot'] = $lot;
-            return (static function ($data, $f) {
+            return (static function ($data, $value) {
                 extract($data, EXTR_SKIP);
                 if (isset($data['data'])) {
                     $data = $data['data'];
                 }
                 ob_start();
-                require $f;
+                require $value;
                 return ob_get_clean();
-            })($data, $f);
+            })($data, $value);
         }
         return null;
     }
 
     public static function of($key) {
+        if ($path = self::path($key)) {
+            return $path;
+        }
         if (is_array($key)) {
             foreach ($key as $v) {
-                if (null !== ($fn = self::of($v))) {
-                    return $fn;
+                if (null !== ($r = self::of($v))) {
+                    return $r;
                 }
             }
-            return self::path($key);
+            return null;
         }
         $c = static::class;
         $key = strtr($key, D, '/');
         foreach (step($key, '/') as $v) {
-            if (isset(self::$lot[$c][1][$v]) && is_callable($fn = self::$lot[$c][1][$v])) {
-                return $fn;
+            if (isset(self::$lot[$c][1][$v]) && is_callable($r = self::$lot[$c][1][$v]) && !isset(self::$lot[$c][0][$v])) {
+                return $r;
             }
         }
-        return self::path($key);
+        return null;
     }
 
     public static function path($value) {
-        $out = [];
         $c = static::class;
         $path = LOT . D . 'y';
         if (is_string($value)) {
@@ -88,16 +90,19 @@ class Layout extends Genome {
             }
             $key = strtr($value, D, '/');
             // Added by the `Layout::set()`
-            if (isset(self::$lot[$c][1][$key]) && !isset(self::$lot[$c][0][$key])) {
+            if (isset(self::$lot[$c][1][$key]) && is_string(self::$lot[$c][1][$key]) && !isset(self::$lot[$c][0][$key])) {
                 return exist(self::$lot[$c][1][$key], 1) ?: null;
             }
             // Guessing…
-            $out = array_unique(array_values(step($key, '/')));
+            $any = array_unique(array_values(step($key, '/')));
         } else {
-            $out = (array) $value;
+            $any = (array) $value;
         }
         $files = [];
-        foreach ($out as $v) {
+        foreach ($any as $v) {
+            if (!is_string($v)) {
+                continue;
+            }
             $v = strtr($v, '/', D);
             // Iterate over the `.\lot\y` folder to find active layout(s)
             foreach (g($path, 0) as $kk => $vv) {
