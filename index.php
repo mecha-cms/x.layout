@@ -8,7 +8,7 @@ namespace {
     \class_alias("\\Time", "\\Date");
     // Alias for `$state`
     $GLOBALS['site'] = $site = $state;
-    // Base title for the layout
+    // Default layout title
     $GLOBALS['t'] = $t = new \Anemone([$state->title], ' &#x00b7; ');
 }
 
@@ -120,7 +120,7 @@ namespace x\layout\route {
             if ($page && $page instanceof \Page && $page->exist() && ($layout = $page->layout)) {
                 // `$content = ['/lot/y/log/page/video.php', [], 200];`
                 if (0 === \strpos($layout, '/')) {
-                    $layout = \stream_resolve_include_path(\PATH . \strtr($layout, ['/' => \D]));
+                    $layout = \stream_resolve_include_path(\PATH . \strtr($layout, '/', \D));
                 }
                 // `$content = ['page/video', [], 200];`
                 $content[0] = $layout;

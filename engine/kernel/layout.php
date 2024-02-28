@@ -22,6 +22,9 @@ class Layout extends Genome {
     }
 
     public static function get($key, array $lot = [], int $status = null) {
+        if (!$f = self::of($key)) {
+            return null;
+        }
         $data = [];
         foreach (array_replace($GLOBALS, $lot) as $k => $v) {
             // Sanitize array key
@@ -31,30 +34,47 @@ class Layout extends Genome {
         if (isset($status) && !headers_sent()) {
             status($status);
         }
-        unset($k, $status, $v);
-        if (is_string($key)) {
-            $c = static::class;
-            $key = strtr($key, D, '/');
-            if (isset(self::$lot[$c][1][$key]) && is_callable($fn = self::$lot[$c][$key])) {
-                return call_user_func($fn, $key, $lot, $status);
-            }
+        if (is_callable($f)) {
+            return call_user_func($f, $key, $lot, $status);
         }
-        if ($f = self::path($key)) {
-            extract($data, EXTR_SKIP);
-            ob_start();
-            if (isset($lot['data'])) {
-                $data = $lot['data'];
-            }
-            $layout = (object) array_replace_recursive([
+        if (is_file($f)) {
+            $data['layout'] = (object) array_replace_recursive([
                 'key' => $key,
                 'lot' => $lot,
                 'name' => strtok(substr($f, strlen(LOT . D . 'y' . D)), D),
                 'path' => $f
             ], (array) ($lot['layout'] ?? []));
-            require $f;
-            return ob_get_clean();
+            $data['lot'] = $lot;
+            return (static function ($data, $f) {
+                extract($data, EXTR_SKIP);
+                if (isset($data['data'])) {
+                    $data = $data['data'];
+                }
+                ob_start();
+                require $f;
+                return ob_get_clean();
+            })($data, $f);
         }
         return null;
+    }
+
+    public static function of($key) {
+        if (is_array($key)) {
+            foreach ($key as $v) {
+                if (null !== ($fn = self::of($v))) {
+                    return $fn;
+                }
+            }
+            return self::path($key);
+        }
+        $c = static::class;
+        $key = strtr($key, D, '/');
+        foreach (step($key, '/') as $v) {
+            if (isset(self::$lot[$c][1][$v]) && is_callable($fn = self::$lot[$c][1][$v])) {
+                return $fn;
+            }
+        }
+        return self::path($key);
     }
 
     public static function path($value) {
