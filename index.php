@@ -15,7 +15,7 @@ namespace {
 namespace x\layout {
     function content($content) {
         if (false !== \strpos($content, '</html>')) {
-            return \preg_replace_callback('/<html(?:\s[^>]*)?>/', static function ($m) {
+            return \preg_replace_callback('/<html(\s(?>"[^"]*"|\'[^\']*\'|[^>])*)?>/', static function ($m) {
                 if (
                     false !== \strpos($m[0], ' class=') ||
                     false !== \strpos($m[0], ' class ') ||
