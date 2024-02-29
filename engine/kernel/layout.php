@@ -27,9 +27,12 @@ class Layout extends Genome {
         }
         $data = [];
         foreach (array_replace($GLOBALS, $lot) as $k => $v) {
+            if ("" === $k || is_int($k) || is_string($k) && is_numeric($k[0])) {
+                continue;
+            }
             // <https://www.php.net/manual/en/language.variables.php>
-            if (!preg_match('/^[a-z_\x80-\xff][\w\x80-\xff]*$/i', $k)) {
-                continue; // Skip!
+            if (!preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $k)) {
+                continue;
             }
             $data[$k] = $v;
         }
@@ -47,15 +50,12 @@ class Layout extends Genome {
                 'route' => "" !== $key ? '/' . strtr($key, D, '/') : null
             ], (array) ($lot['layout'] ?? []));
             $data['lot'] = $lot;
-            return (static function ($data, $f) {
-                extract($data, EXTR_SKIP);
-                if (isset($data['data'])) {
-                    $data = $data['data'];
-                }
+            return (static function ($data) {
                 ob_start();
-                require $f;
+                extract($data);
+                require $layout->path;
                 return ob_get_clean();
-            })($data, $value);
+            })($data);
         }
         return null;
     }
