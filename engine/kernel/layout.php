@@ -39,19 +39,19 @@ class Layout extends Genome {
         }
         if (is_file($value)) {
             $data['layout'] = (object) array_replace_recursive([
-                'key' => $key,
                 'lot' => $lot,
                 'name' => strtok(substr($value, strlen(LOT . D . 'y' . D)), D),
-                'path' => $value
+                'path' => $value,
+                'route' => "" !== $key ? '/' . strtr($key, D, '/') : null
             ], (array) ($lot['layout'] ?? []));
             $data['lot'] = $lot;
-            return (static function ($data, $value) {
+            return (static function ($data, $f) {
                 extract($data, EXTR_SKIP);
                 if (isset($data['data'])) {
                     $data = $data['data'];
                 }
                 ob_start();
-                require $value;
+                require $f;
                 return ob_get_clean();
             })($data, $value);
         }
