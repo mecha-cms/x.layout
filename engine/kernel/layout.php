@@ -27,8 +27,10 @@ class Layout extends Genome {
         }
         $data = [];
         foreach (array_replace($GLOBALS, $lot) as $k => $v) {
-            // Sanitize array key
-            $k = preg_replace('/\W/', "", strtr($k, '-', '_'));
+            // <https://www.php.net/manual/en/language.variables.php>
+            if (!preg_match('/^[a-z_\x80-\xff][\w\x80-\xff]*$/i', $k)) {
+                continue; // Skip!
+            }
             $data[$k] = $v;
         }
         if (isset($status) && !headers_sent()) {
