@@ -1,15 +1,15 @@
 <?php
 
 namespace {
-    $GLOBALS['date'] = $GLOBALS['time'] = new \Time($_SERVER['REQUEST_TIME'] ?? \time());
+    \lot('date', \lot('time', new \Time($_SERVER['REQUEST_TIME'] ?? \time())));
     // Alias for `State`
     \class_alias("\\State", "\\Site");
     // Alias for `Time`
     \class_alias("\\Time", "\\Date");
     // Alias for `$state`
-    $GLOBALS['site'] = $site = $state;
+    \lot('site', $site = $state);
     // Default layout title
-    $GLOBALS['t'] = $t = new \Anemone([$state->title], ' &#x00b7; ');
+    \lot('t', $t = new \Anemone([$state->title], ' &#x00b7; '));
 }
 
 namespace x\layout {
@@ -34,7 +34,7 @@ namespace x\layout {
         return $content;
     }
     function get() {
-        \extract($GLOBALS);
+        \extract(\lot());
         $content = \Hook::fire('route', [null, $url->path, $url->query, $url->hash]);
         if (\is_array($content) || \is_object($content)) {
             if (!\error_get_last()) {
@@ -88,7 +88,7 @@ namespace x\layout\get {
         if (!\class_exists("\\Asset")) {
             return;
         }
-        foreach ($GLOBALS['Y'][1] ?? [] as $index) {
+        foreach (\lot('Y')[1] ?? [] as $index) {
             // Detect relative asset path to the `.\lot\y\*` folder
             if ($assets = \Asset::get()) {
                 foreach ($assets as $k => $v) {
@@ -116,7 +116,7 @@ namespace x\layout\get {
 namespace x\layout\route {
     function page($content) {
         if (\is_array($content) && \class_exists("\\Page")) {
-            $page = $GLOBALS['page'] ?? new \Page;
+            $page = \lot('page') ?? new \Page;
             if ($page && $page instanceof \Page && $page->exist() && ($layout = $page->layout)) {
                 // `$content = ['/lot/y/log/page/video.php', [], 200];`
                 if (0 === \strpos($layout, '/')) {

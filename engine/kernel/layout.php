@@ -25,37 +25,29 @@ class Layout extends Genome {
         if (!$value = self::of($key)) {
             return null;
         }
-        $data = [];
-        foreach (array_replace($GLOBALS, $lot) as $k => $v) {
-            if ("" === $k || is_int($k) || is_string($k) && is_numeric($k[0])) {
-                continue;
-            }
-            // <https://www.php.net/manual/en/language.variables.php>
-            if (!preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $k)) {
-                continue;
-            }
-            $data[$k] = $v;
-        }
         if (isset($status) && !headers_sent()) {
             status($status);
+        }
+        foreach ($lot as $k => $v) {
+            lot($k, $v);
         }
         if (is_callable($value)) {
             return call_user_func($value, $key, $lot, $status);
         }
         if (is_file($value)) {
-            $data['layout'] = (object) array_replace_recursive([
-                'lot' => $lot,
-                'name' => strtok(substr($value, strlen(LOT . D . 'y' . D)), D),
-                'path' => $value,
-                'route' => "" !== $key ? '/' . strtr($key, D, '/') : null
-            ], (array) ($lot['layout'] ?? []));
-            $data['lot'] = $lot;
-            return (static function ($data) {
+            $layout = new static;
+            $layout->data = $lot;
+            $layout->name = strtok(substr($value, strlen(LOT . D . 'y' . D)), D);
+            $layout->path = $value;
+            $layout->route = "" !== $key ? '/' . strtr($key, D, '/') : null;
+            lot('layout', $layout);
+            lot('lot', $lot);
+            return (static function () {
                 ob_start();
-                extract($data);
+                extract(lot());
                 require $layout->path;
                 return ob_get_clean();
-            })($data);
+            })();
         }
         return null;
     }
@@ -145,5 +137,10 @@ class Layout extends Genome {
             }
         }
     }
+
+    public $data;
+    public $name;
+    public $path;
+    public $route;
 
 }
