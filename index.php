@@ -52,7 +52,7 @@ namespace x\layout {
         if (\is_array($content) && isset($content[0]) && \is_string($content[0])) {
             if ($r = \Layout::get(...$content)) {
                 $content = $r;
-            } else if (\defined("\\TEST") && \TEST) {
+            } else if (\defined("\\TEST") && \TEST && \function_exists("\\abort")) {
                 \status(403);
                 $content = \abort(\i('Requires at least one %s file.', ['<code>' . \strtr(\LOT, [\PATH . \D => '.' . \D]) . \D . 'y' . \D . '*' . \D . 'index.php</code>']));
             }
