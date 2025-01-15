@@ -21,7 +21,7 @@ class Layout extends Genome {
         return self::get($kin, ...$lot);
     }
 
-    public static function get($key, array $lot = [], int $status = null) {
+    public static function get($key, array $lot = [], ?int $status = null) {
         if (!$value = self::of($key)) {
             return null;
         }
