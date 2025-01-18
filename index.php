@@ -50,11 +50,21 @@ namespace x\layout {
         \ob_start(!\error_get_last() ? "\\ob_gzhandler" : null);
         // `$content = ['page', [], 200];`
         if (\is_array($content) && isset($content[0]) && \is_string($content[0])) {
-            if ($r = \Layout::get(...$content)) {
+            if (null !== ($r = \Layout::get(...$content))) {
                 $content = $r;
             } else if (\defined("\\TEST") && \TEST && \function_exists("\\abort")) {
                 \status(403);
-                $content = \abort(\i('Requires at least one %s file.', ['<code>' . \strtr(\LOT, [\PATH . \D => '.' . \D]) . \D . 'y' . \D . '*' . \D . 'index.php</code>']));
+                $k = \glob(\LOT . \D . 'y' . \D . '*' . \D . 'index.php', \GLOB_NOSORT);
+                if (isset($k[0])) {
+                    $k = \dirname(\substr($k[0], \strlen(\LOT . \D . 'y' . \D)));
+                } else {
+                    $k = '*';
+                }
+                $v = \strtr(\LOT, [\PATH . \D => '.' . \D]) . \D . 'y' . \D . $k . \D;
+                $content = \abort(\i('Requires both a %s file and a %s file to run.', [
+                    '<code>' . $v . 'index.php</code>',
+                    '<code>' . (0 === \strpos($content[0], \PATH) ? \strtr($content[0], [\PATH . \D => '.' . \D]) : $v . \strtr($content[0], '/', \D) . '.php') . '</code>',
+                ]));
             }
         }
         echo \Hook::fire('content', [$content]);
@@ -120,7 +130,8 @@ namespace x\layout\route {
             if ($page && $page instanceof \Page && $page->exist() && ($layout = $page->layout)) {
                 // `$content = ['/lot/y/log/page/video.php', [], 200];`
                 if (0 === \strpos($layout, '/')) {
-                    $layout = \stream_resolve_include_path(\PATH . \strtr($layout, '/', \D));
+                    $layout = \PATH . \strtr($layout, '/', \D);
+                    $layout = \stream_resolve_include_path($layout) ?: stream_resolve_include_path($layout . '.php');
                 }
                 // `$content = ['page/video', [], 200];`
                 $content[0] = $layout;
