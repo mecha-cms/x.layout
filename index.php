@@ -1,6 +1,9 @@
 <?php
 
 namespace {
+    function layout(...$lot) {
+        return \count($lot) < 2 ? \Layout::of(...$lot) : \Layout::set(...$lot);
+    }
     \lot('date', \lot('time', new \Time($_SERVER['REQUEST_TIME'] ?? \time())));
     // Alias for `State`
     \class_alias("\\State", "\\Site");
@@ -14,22 +17,22 @@ namespace {
 
 namespace x\layout {
     function content($content) {
-        if (false !== \strpos($content, '</html>')) {
-            return \preg_replace_callback('/<html(\s(?>"[^"]*"|\'[^\']*\'|[^>])*)?>/', static function ($m) {
-                if (
-                    false !== \strpos($m[0], ' class=') ||
-                    false !== \strpos($m[0], ' class ') ||
-                    ' class>' === \substr($m[0], -7)
-                ) {
-                    $r = new \HTML($m[0]);
-                    $c = true === $r['class'] ? [] : \preg_split('/\s+/', $r['class'] ?? "");
+        if (
+            false !== ($a = \strpos($content, '<html ')) ||
+            false !== ($a = \strpos($content, "<html\n")) ||
+            false !== ($a = \strpos($content, "<html\r")) ||
+            false !== ($a = \strpos($content, "<html\t"))
+        ) {
+            if (false !== ($b = \strpos($content, '>', $a))) {
+                $e = new \HTML(\substr($content, $a, ($b + 1) - $a));
+                if (isset($e['class'])) {
+                    $c = true === $e['class'] ? [] : \preg_split('/\s+/', $e['class'] ?? "");
                     $c = \array_unique(\array_merge($c, \array_keys(\array_filter((array) \State::get('[y]', true)))));
                     \sort($c); // Sort class name(s)
-                    $r['class'] = \trim(\implode(' ', $c));
-                    return $r;
+                    $e['class'] = "" !== ($c = \trim(\implode(' ', $c))) ? $c : true;
                 }
-                return $m[0];
-            }, $content);
+                return \substr_replace($content, (string) $e, $a, ($b + 1) - $a);
+            }
         }
         return $content;
     }
@@ -60,10 +63,10 @@ namespace x\layout {
                 } else {
                     $k = '*';
                 }
-                $v = \strtr(\LOT, [\PATH . \D => '.' . \D]) . \D . 'y' . \D . $k . \D;
+                $v = \strtr(\LOT, [$r = \PATH . \D => '.' . \D]) . \D . 'y' . \D . $k . \D;
                 $content = \abort(\i('Requires both a %s file and a %s file to run.', [
                     '<code>' . $v . 'index.php</code>',
-                    '<code>' . (0 === \strpos($content[0], \PATH) ? \strtr($content[0], [\PATH . \D => '.' . \D]) : $v . \strtr($content[0], '/', \D) . '.php') . '</code>',
+                    '<code>' . (0 === \strpos($content[0], $r) ? \strtr($content[0], [$r => '.' . \D]) : $v . \strtr($content[0], '/', \D) . '.php') . '</code>',
                 ]));
             }
         }
