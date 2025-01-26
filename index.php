@@ -2,7 +2,7 @@
 
 namespace {
     function layout(...$lot) {
-        return \count($lot) < 2 ? \Layout::of(...$lot) : \Layout::set(...$lot);
+        return \count($lot) < 2 ? \Layout::get(...$lot) : \Layout::set(...$lot);
     }
     \lot('date', \lot('time', new \Time($_SERVER['REQUEST_TIME'] ?? \time())));
     // Alias for `State`
