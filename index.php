@@ -20,6 +20,9 @@ namespace {
 
 namespace x\layout {
     function content($content) {
+        if (!$content || false === \strpos($content, '</')) {
+            return $content;
+        }
         if (
             false !== ($a = \strpos($content, '<html ')) ||
             false !== ($a = \strpos($content, "<html\n")) ||
