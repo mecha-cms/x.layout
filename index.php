@@ -33,7 +33,7 @@ namespace x\layout {
                 $e = new \HTML(\substr($content, $a, ($b + 1) - $a));
                 if (isset($e['class'])) {
                     $c = true === $e['class'] ? [] : \preg_split('/\s+/', $e['class'] ?? "");
-                    $c = \array_unique(\array_merge($c, \array_keys(\array_filter((array) \State::get('[y]', true)))));
+                    $c = \array_unique(\array_merge($c, \array_keys(\array_filter((array) \State::get('[y].state', true)))));
                     \sort($c); // Sort class name(s)
                     $e['class'] = "" !== ($c = \trim(\implode(' ', $c))) ? $c : true;
                 }
@@ -92,11 +92,11 @@ namespace x\layout\content {
         \State::set('[x]', []);
         foreach (['are', 'as', 'can', 'has', 'is', 'not', 'of', 'with'] as $v) {
             foreach ((array) \State::get($v, true) as $kk => $vv) {
-                \State::set('[y].' . $v . ':' . $kk, $vv);
+                \State::set('[y].state.' . $v . ':' . $kk, $vv);
             }
         }
         if ($x = \State::get('is.error')) {
-            \State::set('[y].error:' . $x, true);
+            \State::set('[y].state.error:' . $x, true);
         }
     }
     \Hook::set('content', __NAMESPACE__ . "\\state", 0);
