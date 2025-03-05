@@ -46,9 +46,10 @@ namespace x\layout {
         \extract(\lot());
         $content = \Hook::fire('route', [null, $url->path, $url->query, $url->hash]);
         if (\is_array($content) || \is_object($content)) {
-            if (!\error_get_last()) {
+            if (!$error = \error_get_last()) {
                 \type('application/json');
             }
+            \status($error ? 400 : 200);
             echo \To::JSON($content, true);
         } else {
             echo $content;
@@ -92,11 +93,11 @@ namespace x\layout\content {
         \State::set('[x]', []);
         foreach (['are', 'as', 'can', 'has', 'is', 'not', 'of', 'with'] as $v) {
             foreach ((array) \State::get($v, true) as $kk => $vv) {
-                \State::set('[y].state.' . $v . ':' . $kk, $vv);
+                \State::set('[y].state.' . $v . '-' . $kk, $vv);
             }
         }
         if ($x = \State::get('is.error')) {
-            \State::set('[y].state.error:' . $x, true);
+            \State::set('[y].state.error-' . $x, true);
         }
     }
     \Hook::set('content', __NAMESPACE__ . "\\state", 0);
@@ -140,7 +141,7 @@ namespace x\layout\route {
                 // `$content = ['/lot/y/log/page/video.php', [], 200];`
                 if (0 === \strpos($layout, '/')) {
                     $layout = \PATH . \strtr($layout, '/', \D);
-                    $layout = \stream_resolve_include_path($layout) ?: stream_resolve_include_path($layout . '.php');
+                    $layout = \stream_resolve_include_path($layout) ?: \stream_resolve_include_path($layout . '.php');
                 }
                 // `$content = ['page/video', [], 200];`
                 $content[0] = $layout;
