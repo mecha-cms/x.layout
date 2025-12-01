@@ -33,7 +33,7 @@ namespace x\layout {
                 $e = new \HTML(\substr($content, $a, ($b + 1) - $a));
                 if (isset($e['class'])) {
                     $c = true === $e['class'] ? [] : \preg_split('/\s+/', $e['class'] ?? "");
-                    $c = \array_unique(\array_merge($c, \array_keys(\array_filter((array) \State::get('[y].state', true)))));
+                    $c = \array_unique(\array_merge($c, \array_keys(\array_filter((array) \State::get('q.state', true)))));
                     \sort($c); // Sort class name(s)
                     $e['class'] = "" !== ($c = \trim(\implode(' ', $c))) ? $c : true;
                 }
@@ -70,10 +70,12 @@ namespace x\layout {
                 } else {
                     $k = '*';
                 }
-                $v = \strtr(\LOT, [$r = \PATH . \D => '.' . \D]) . \D . 'y' . \D . $k . \D;
+                $v = \strtr(\LOT, [($r = \PATH . \D) => '.' . \D]) . \D . 'y' . \D . $k . \D;
                 $content = \abort(\i('Requires both a %s file and a %s file to run.', [
                     '<code>' . $v . 'index.php</code>',
-                    '<code>' . (0 === \strpos($content[0], $r) ? \strtr($content[0], [$r => '.' . \D]) : $v . \strtr($content[0], '/', \D) . '.php') . '</code>',
+                    '<code>' . (0 === \strpos($content[0], $r) ? \strtr($content[0], [$r => '.' . \D]) : \implode(' ' . \i('or') . ' ', \map(\step(\strtr($content[0], '/', \D), \D), function ($vv) use ($v) {
+                        return $v . $vv . '.php';
+                    }))) . '</code>'
                 ]));
             }
         }
@@ -90,14 +92,13 @@ namespace x\layout {
 
 namespace x\layout\content {
     function state() {
-        \State::set('[x]', []);
         foreach (['are', 'as', 'can', 'has', 'is', 'not', 'of', 'with'] as $v) {
             foreach ((array) \State::get($v, true) as $kk => $vv) {
-                \State::set('[y].state.' . $v . '-' . $kk, $vv);
+                \State::set('q.state.' . $v . '-' . $kk, $vv);
             }
         }
         if ($x = \State::get('is.error')) {
-            \State::set('[y].state.error-' . $x, true);
+            \State::set('q.state.error-' . $x, true);
         }
     }
     \Hook::set('content', __NAMESPACE__ . "\\state", 0);
