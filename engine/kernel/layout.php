@@ -35,7 +35,7 @@ class Layout extends Genome {
             $layout = new static;
             $layout->key = $key;
             $layout->lot = $lot;
-            $layout->name = strtok(substr($value, strlen(LOT . D . 'y' . D)), D);
+            $layout->name = strstr(substr($value, strlen(LOT . D . 'y' . D)), D, true);
             $layout->path = $value;
             $layout->route = "" !== $key && is_string($key) ? '/' . strtr($key, D, '/') : null;
             $lot['layout'] = $layout;
