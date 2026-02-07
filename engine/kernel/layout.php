@@ -4,6 +4,12 @@ class Layout extends Genome {
 
     protected static $of;
 
+    public function __construct(array $lot) {
+        foreach ($lot as $k => $v) {
+            $this->{$k} = $v;
+        }
+    }
+
     public static function __callStatic(string $kin, array $lot = []) {
         if (parent::_($kin)) {
             return parent::__callStatic($kin, $lot);
@@ -32,13 +38,14 @@ class Layout extends Genome {
             return call_user_func($value, $key, $lot, $status);
         }
         if (is_file($value)) {
-            $layout = new static;
-            $layout->key = $key;
-            $layout->lot = $lot;
-            $layout->name = strstr(substr($value, strlen(LOT . D . 'y' . D)), D, true);
-            $layout->path = $value;
-            $layout->route = "" !== $key && is_string($key) ? '/' . strtr($key, D, '/') : null;
-            $lot['layout'] = $layout;
+            $lot['layout'] = new static([
+                'key' => $key,
+                'lot' => $lot,
+                'name' => strstr(substr($value, strlen(LOT . D . 'y' . D)), D, true),
+                'path' => $value,
+                'status' => $status,
+                'y' => "" !== $key && is_string($key) ? '/' . strtr($key, D, '/') : null,
+            ]);
             return (static function ($lot) {
                 ob_start();
                 extract(lot($lot), EXTR_SKIP);
@@ -139,6 +146,7 @@ class Layout extends Genome {
     public $lot;
     public $name;
     public $path;
-    public $route;
+    public $status;
+    public $y;
 
 }

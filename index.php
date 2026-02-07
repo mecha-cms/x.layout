@@ -23,12 +23,8 @@ namespace x\layout {
         if (!$content || false === \strpos($content, '</')) {
             return $content;
         }
-        if (
-            false !== ($a = \strpos($content, '<html ')) ||
-            false !== ($a = \strpos($content, "<html\n")) ||
-            false !== ($a = \strpos($content, "<html\r")) ||
-            false !== ($a = \strpos($content, "<html\t"))
-        ) {
+        // Capture the `<html>` part
+        if (false !== ($a = \strpos($content, '<html')) && \strspn($content, " \n\r\t", $a + 5)) {
             if (false !== ($b = \strpos($content, '>', $a))) {
                 $e = new \HTML(\substr($content, $a, ($b + 1) - $a));
                 if (isset($e['class'])) {
@@ -58,22 +54,30 @@ namespace x\layout {
     function route($content, $path) {
         \ob_start();
         \ob_start(!\error_get_last() ? "\\ob_gzhandler" : null);
-        // `$content = ['page', [], 200];`
-        if (\is_array($content) && isset($content[0]) && \is_string($content[0])) {
-            if (null !== ($r = \Layout::get(...$content))) {
+        if (\is_array($content)) {
+            if (\array_is_list($content)) {
+                $content = [
+                    'lot' => (array) ($content[1] ?? []),
+                    'status' => $content[2] ?? null,
+                    'y' => $content[0] ?? false
+                ];
+            }
+            $layout = new \Layout($content);
+        } else {
+            $layout = $content;
+        }
+        if (\is_object($layout)) {
+            if (null !== ($r = \Layout::get($layout->y, $layout->lot, $layout->status))) {
                 $content = $r;
             } else if (\defined("\\TEST") && \TEST && \function_exists("\\abort")) {
-                \status(403);
-                $k = \glob(\LOT . \D . 'y' . \D . '*' . \D . 'index.php', \GLOB_NOSORT);
-                if (isset($k[0])) {
-                    $k = \dirname(\substr($k[0], \strlen(\LOT . \D . 'y' . \D)));
-                } else {
-                    $k = '*';
-                }
+                $k = \reset(\glob(\LOT . \D . 'y' . \D . '*' . \D . 'index.php', \GLOB_NOSORT));
+                $k = $k ? \dirname(\substr($k[0], \strlen(\LOT . \D . 'y' . \D))) : '*';
                 $v = \strtr(\LOT, [($r = \PATH . \D) => '.' . \D]) . \D . 'y' . \D . $k . \D;
+                $y = $layout->y;
+                \status(403);
                 $content = \abort(\i('Requires both a %s file and a %s file to run.', [
                     '<code>' . $v . 'index.php</code>',
-                    '<code>' . (0 === \strpos($content[0], $r) ? \strtr($content[0], [$r => '.' . \D]) : \implode(' ' . \i('or') . ' ', \map(\step(\strtr($content[0], '/', \D), \D), function ($vv) use ($v) {
+                    '<code>' . (0 === \strpos($y, $r) ? \strtr($y, [$r => '.' . \D]) : \implode(' ' . \i('or') . ' ', \map(\step(\strtr($y, '/', \D), \D), function ($vv) use ($v) {
                         return $v . $vv . '.php';
                     }))) . '</code>'
                 ]));
@@ -139,13 +143,19 @@ namespace x\layout\route {
         if (\is_array($content) && \class_exists("\\Page")) {
             $page = \lot('page') ?? new \Page;
             if ($page && $page instanceof \Page && $page->exist() && ($layout = $page->layout)) {
-                // `$content = ['/lot/y/log/page/video.php', [], 200];`
-                if (0 === \strpos($layout, '/')) {
-                    $layout = \PATH . \strtr($layout, '/', \D);
+                if (0 === \strpos($layout, ".\\")) {
+                    $layout = \stream_resolve_include_path(\PATH . \strtr(\substr($layout, 1), ["\\" => \D]));
+                } else if (0 === \strpos($layout, '/')) {
+                    $layout = \PATH . \strtr($layout, ['/' => \D]);
                     $layout = \stream_resolve_include_path($layout) ?: \stream_resolve_include_path($layout . '.php');
                 }
-                // `$content = ['page/video', [], 200];`
-                $content[0] = $layout;
+                // `['page/video', [], 200]`
+                if (\array_is_list($content)) {
+                    $content[0] = $layout;
+                // `['lot' => [], 'status' => 200, 'y' => 'page/video']`
+                } else {
+                    $content['y'] = $layout;
+                }
             }
         }
         return $content;
