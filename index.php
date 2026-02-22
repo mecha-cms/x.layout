@@ -40,7 +40,7 @@ namespace x\layout {
     }
     function get() {
         \extract(\lot());
-        $content = \Hook::fire('route', [null, $url->path, $url->query, $url->hash]);
+        $content = \Hook::fire('route', [null, $link->path, $link->query, $link->hash]);
         if (\is_array($content) || \is_object($content)) {
             if (!$error = \error_get_last()) {
                 \type('application/json');
