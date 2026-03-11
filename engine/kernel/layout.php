@@ -1,6 +1,6 @@
 <?php
 
-class Layout extends Genome {
+class Layout extends Proxy {
 
     protected static $of;
 

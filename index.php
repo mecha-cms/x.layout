@@ -15,7 +15,7 @@ namespace {
     // Alias for `$state`
     \lot('site', $site = $state);
     // Default layout title
-    \lot('t', $t = new \Anemone([$state->title], ' &#x00b7; '));
+    \lot('t', $t = new \Batch([$state->title], ' &#x00b7; '));
 }
 
 namespace x\layout {
@@ -69,8 +69,8 @@ namespace x\layout {
         if (\is_object($layout)) {
             if (null !== ($r = \Layout::get($layout->y, $layout->lot, $layout->status))) {
                 $content = $r;
-            } else if (\defined("\\TEST") && \TEST && \function_exists("\\abort")) {
-                $k = \reset(\glob(\LOT . \D . 'y' . \D . '*' . \D . 'index.php', \GLOB_NOSORT));
+            } else if (\defined("\\TEST") && \TEST && \function_exists("\\abort") && ($k = \glob(\LOT . \D . 'y' . \D . '*' . \D . 'index.php', \GLOB_NOSORT))) {
+                $k = \reset($k);
                 $k = $k ? \dirname(\substr($k[0], \strlen(\LOT . \D . 'y' . \D))) : '*';
                 $v = \strtr(\LOT, [($r = \PATH . \D) => '.' . \D]) . \D . 'y' . \D . $k . \D;
                 $y = $layout->y;
