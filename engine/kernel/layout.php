@@ -43,8 +43,7 @@ class Layout extends Proxy {
                 'lot' => $lot,
                 'name' => strstr(substr($value, strlen(LOT . D . 'y' . D)), D, true),
                 'path' => $value,
-                'status' => $status,
-                'y' => "" !== $key && is_string($key) ? '/' . strtr($key, D, '/') : null,
+                'status' => $status
             ]);
             return (static function ($lot) {
                 ob_start();
@@ -146,6 +145,5 @@ class Layout extends Proxy {
     public $name;
     public $path;
     public $status;
-    public $y;
 
 }

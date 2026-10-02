@@ -55,7 +55,10 @@ namespace x\layout {
         \ob_start();
         \ob_start(!\error_get_last() ? "\\ob_gzhandler" : null);
         if (\is_array($content)) {
-            $content = new \Layout($content);
+            $content = new \Layout(\array_is_list($content) ? [
+                'lot' => $content[1] ?? [],
+                'status' => $content[0] ?? 403
+            ] : $content);
         } else if (\is_int($content)) {
             $content = new \Layout([
                 'lot' => [],
