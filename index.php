@@ -55,32 +55,16 @@ namespace x\layout {
         \ob_start();
         \ob_start(!\error_get_last() ? "\\ob_gzhandler" : null);
         if (\is_array($content)) {
-            if (\array_is_list($content)) {
-                $content = [
-                    'lot' => (array) ($content[1] ?? []),
-                    'status' => $content[2] ?? null,
-                    'y' => $content[0] ?? false
-                ];
-            }
-            $layout = new \Layout($content);
-        } else {
-            $layout = $content;
+            $content = new \Layout($content);
+        } else if (\is_int($content)) {
+            $content = new \Layout([
+                'lot' => [],
+                'status' => $content
+            ]);
         }
-        if (\is_object($layout)) {
-            if (null !== ($r = \Layout::get($layout->y, $layout->lot, $layout->status))) {
+        if (\is_object($content)) {
+            if (null !== ($r = \Layout::get('index', $content->lot, $content->status))) {
                 $content = $r;
-            } else if (\defined("\\TEST") && \TEST && \function_exists("\\abort") && ($k = \glob(\LOT . \D . 'y' . \D . '*' . \D . 'index.php', \GLOB_NOSORT))) {
-                $k = \reset($k);
-                $k = $k ? \dirname(\substr($k[0], \strlen(\LOT . \D . 'y' . \D))) : '*';
-                $v = \strtr(\LOT, [($r = \PATH . \D) => '.' . \D]) . \D . 'y' . \D . $k . \D;
-                $y = $layout->y;
-                \status(403);
-                $content = \abort(\i('Requires both a %s file and a %s file to run.', [
-                    '<code>' . $v . 'index.php</code>',
-                    '<code>' . (0 === \strpos($y, $r) ? \strtr($y, [$r => '.' . \D]) : \implode(' ' . \i('or') . ' ', \map(\step(\strtr($y, '/', \D), \D), function ($vv) use ($v) {
-                        return $v . $vv . '.php';
-                    }))) . '</code>'
-                ]));
             }
         }
         echo \Hook::fire('content', [$content]);
@@ -136,29 +120,4 @@ namespace x\layout\get {
         }
     }
     \Hook::set('get', __NAMESPACE__ . "\\asset", 0);
-}
-
-namespace x\layout\route {
-    function page($content) {
-        if (\is_array($content) && \class_exists("\\Page")) {
-            $page = \lot('page') ?? new \Page;
-            if ($page && $page instanceof \Page && $page->exist() && ($layout = $page->layout)) {
-                if (0 === \strpos($layout, ".\\")) {
-                    $layout = \stream_resolve_include_path(\PATH . \strtr(\substr($layout, 1), ["\\" => \D]));
-                } else if (0 === \strpos($layout, '/')) {
-                    $layout = \PATH . \strtr($layout, ['/' => \D]);
-                    $layout = \stream_resolve_include_path($layout) ?: \stream_resolve_include_path($layout . '.php');
-                }
-                // `['page/video', [], 200]`
-                if (\array_is_list($content)) {
-                    $content[0] = $layout;
-                // `['lot' => [], 'status' => 200, 'y' => 'page/video']`
-                } else {
-                    $content['y'] = $layout;
-                }
-            }
-        }
-        return $content;
-    }
-    \Hook::set('route', __NAMESPACE__ . "\\page", 900);
 }

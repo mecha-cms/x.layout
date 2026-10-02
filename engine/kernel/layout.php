@@ -61,17 +61,16 @@ class Layout extends Proxy {
             return $path;
         }
         if (is_array($key)) {
-            foreach ($key as $v) {
-                if (null !== ($r = self::of($v))) {
+            foreach ($key as $k) {
+                if (null !== ($r = self::of($k))) {
                     return $r;
                 }
             }
             return null;
         }
         $c = static::class;
-        $key = strtr($key, D, '/');
-        foreach (step($key, '/') as $v) {
-            if (isset(self::$of[$c][1][$v]) && is_callable($r = self::$of[$c][1][$v]) && !isset(self::$of[$c][0][$v])) {
+        foreach (step(strtr($key, D, '/'), '/') as $k) {
+            if (is_callable($r = self::$of[$c][1][$k] ?? 0) && !isset(self::$of[$c][0][$k])) {
                 return $r;
             }
         }
@@ -97,17 +96,17 @@ class Layout extends Proxy {
             $keys = (array) $key;
         }
         $files = [];
-        foreach ($keys as $v) {
-            if (!is_string($v)) {
+        foreach ($keys as $key) {
+            if (!is_string($key)) {
                 continue;
             }
-            $v = strtr($v, '/', D);
+            $key = strtr($key, '/', D);
             // Iterate over the `.\lot\y` folder to find active layout(s)
-            foreach (g($path, 0) as $kk => $vv) {
-                if (!is_file($kk . D . 'index.php')) {
+            foreach (g($path, 0) as $k => $v) {
+                if (!is_file($k . D . 'index.php')) {
                     continue;
                 }
-                $files[] = 0 !== strpos($v, $kk) ? $kk . D . $v . '.php' : $v;
+                $files[] = $k . D . $key . '.phtml';
             }
         }
         return exist($files) ?: null;
@@ -135,8 +134,8 @@ class Layout extends Proxy {
             }
         } else {
             $c = static::class;
+            $key = strtr($key, D, '/');
             if (!isset(self::$of[$c][0][$key])) {
-                $key = strtr($key, D, '/');
                 self::$of[$c][1][$key] = $value;
             }
         }
