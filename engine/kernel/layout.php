@@ -8,6 +8,9 @@ class Layout extends Proxy {
         foreach ($lot as $k => $v) {
             $this->{$k} = $v;
         }
+        if ($name = State::get('x.layout.name')) {
+            $this->name = $name;
+        }
     }
 
     public static function __callStatic(string $kin, array $lot = []) {
@@ -94,13 +97,27 @@ class Layout extends Proxy {
         } else {
             $keys = (array) $key;
         }
+        // I’m planning to add an ability to manually set the active layout via state to allow user(s) to load different
+        // layout(s) based on certain condition(s). User(s) can install multiple layout(s) in the `.\lot\y` folder and
+        // name their `index.php` as `.index.php` so that it won’t be recognized as the active layout. Then, a state
+        // value can determine which inactive layout should be recognized as the active layout.
+        if ($active = State::get('x.layout.name')) {
+            // Force to load `.index.php` file as if it were `index.php`
+            if (is_file($f = $path . D . $active . D . '.index.php')) {
+                require $f;
+            }
+        }
         $files = [];
         foreach ($keys as $key) {
             if (!is_string($key)) {
                 continue;
             }
             $key = strtr($key, '/', D);
-            // Iterate over the `.\lot\y` folder to find active layout(s)
+            if ($active) {
+                $files[] = $path . D . $active . D . $key . '.phtml';
+                continue;
+            }
+            // Iterate over the `.\lot\y` folder to find “active” layout(s)
             foreach (g($path, 0) as $k => $v) {
                 if (!is_file($k . D . 'index.php')) {
                     continue;

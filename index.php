@@ -53,12 +53,15 @@ namespace x\layout {
     }
     function route($content, $path) {
         \ob_start();
-        \ob_start(!\error_get_last() ? "\\ob_gzhandler" : null);
+        \ob_start(\error_get_last() ? null : "\\ob_gzhandler");
         if (\is_array($content)) {
             $content = new \Layout(\array_is_list($content) ? [
                 'lot' => $content[1] ?? [],
                 'status' => $content[0] ?? 403
-            ] : $content);
+            ] : \array_replace([
+                'lot' => [],
+                'status' => 403
+            ], $content));
         } else if (\is_int($content)) {
             $content = new \Layout([
                 'lot' => [],
@@ -66,7 +69,7 @@ namespace x\layout {
             ]);
         }
         if (\is_object($content)) {
-            if (null !== ($r = \Layout::get('index', $content->lot, $content->status))) {
+            if (null !== ($r = \Layout::get($content->key ?? 'index', $content->lot, $content->status))) {
                 $content = $r;
             }
         }

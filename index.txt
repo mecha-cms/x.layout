@@ -7,10 +7,3 @@ author: Taufik Nurrohman
 type: Markdown
 version: 2.3.0
 ...
-
-### Features
-
- - Add HTML classes automatically to the `<html>` element based on the current page conditional statements.
- - Custom layout path using page’s `layout` property.
- - Detect asset path relative to the `.\lot\y\*` folder.
- - Detect layout path relative to the `.\lot\y\*` folder.
